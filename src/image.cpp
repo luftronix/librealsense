@@ -8,7 +8,9 @@
 #include <cmath>
 #include <algorithm>
 
-#include <tmmintrin.h> // For SSE3 intrinsics used in unpack_yuy2_sse
+//#include <pmmintrin.h> // For SSE3 intrinsics used in unpack_yuy2_sse
+#include <arm_neon.h>
+#include "SSE2NEON.h"
 
 #pragma pack(push, 1) // All structs in this file are assumed to be byte-packed
 namespace rsimpl

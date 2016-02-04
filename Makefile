@@ -3,8 +3,8 @@ BACKEND := V4L2
 
 LIBUSB_FLAGS := `pkg-config --cflags --libs libusb-1.0`
 
-CFLAGS := -std=c11 -fPIC -pedantic -DRS_USE_$(BACKEND)_BACKEND $(LIBUSB_FLAGS)
-CXXFLAGS := -std=c++11 -fPIC -pedantic -mssse3 -O3 -Wno-missing-field-initializers
+CFLAGS := -std=c11 -fPIC -pedantic -mfloat-abi=softfp -mfpu=neon -DRS_USE_$(BACKEND)_BACKEND $(LIBUSB_FLAGS)
+CXXFLAGS := -std=c++11 -fPIC -pedantic -O3 -mfpu=neon -Wno-missing-field-initializers
 CXXFLAGS += -Wno-switch -Wno-multichar -DRS_USE_$(BACKEND)_BACKEND $(LIBUSB_FLAGS)
 
 # Compute list of all *.o files that participate in librealsense.so
