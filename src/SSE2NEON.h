@@ -941,4 +941,70 @@ FORCE_INLINE void _mm_clflush(void const*p) {
 	// no corollary for Neon?
 }
 
+// Missing SSSE3 intrinsics ?
+
+FORCE_INLINE __m128i _mm_alignr_epi8(__m128i __X, __m128i __Y, const int __N)
+{
+  return vdupq_n_s32(0);
+}
+
+FORCE_INLINE __m128i _mm_loadu_si128(const __m128i*)
+{
+  return vdupq_n_s32(0);
+}
+
+FORCE_INLINE __m128i _mm_max_epi16(__m128i,__m128i)
+{
+  return vdupq_n_s32(0);
+}
+
+FORCE_INLINE __m128i _mm_set1_epi16(short) 
+{
+  return vdupq_n_s32(0);
+}
+
+FORCE_INLINE __m128i _mm_set1_epi8(char)
+{
+  return vdupq_n_s32(0);
+}
+
+FORCE_INLINE __m128i _mm_setr_epi8(char,char,char,char,char,char,char,char,char,char,char,char,char,char,char,char)
+{
+  return vdupq_n_s32(0);
+}
+
+FORCE_INLINE __m128i _mm_shuffle_epi8(__m128i,__m128i)
+{
+  return vdupq_n_s32(0);
+}
+
+FORCE_INLINE __m128i _mm_slli_epi16(__m128i,int)
+{
+  return vdupq_n_s32(0);
+}
+
+FORCE_INLINE void _mm_storeu_si128(__m128i*,__m128i)
+{
+}
+
+FORCE_INLINE __m128i _mm_sub_epi16(__m128i,__m128i)
+{
+  return vdupq_n_s32(0);
+}
+
+FORCE_INLINE __m128i _mm_unpackhi_epi16(__m128i,__m128i)
+{
+  return vdupq_n_s32(0);
+}
+
+FORCE_INLINE __m128i _mm_unpackhi_epi8(__m128i,__m128i)
+{
+  return vdupq_n_s32(0);
+}
+
+FORCE_INLINE __m128i _mm_subs_epi16(__m128i,__m128i)
+{
+  return vdupq_n_s32(0);
+}
+
 #endif
