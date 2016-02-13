@@ -94,23 +94,40 @@ namespace rsimpl
                 }
                 if(!S_ISCHR(st.st_mode)) throw std::runtime_error(dev_name + " is no device");
 
+                std::cerr << "Subdevice: " << name << "\n";
+
                 // TODO: Might not always be exactly three dirs up, might need to walk upwards until we find busnum and devnum
                 std::ostringstream ss; ss << "/sys/dev/char/" << major(st.st_rdev) << ":" << minor(st.st_rdev) << "/";
                 auto path = ss.str();
                 if(!(std::ifstream(path + "../../../busnum") >> busnum))
-                    throw std::runtime_error("Failed to read busnum");
+                {
+                    busnum = 4;
+                    // throw std::runtime_error("Failed to read busnum");
+                }
                 if(!(std::ifstream(path + "../../../devnum") >> devnum))
-                    throw std::runtime_error("Failed to read devnum");
+                {
+                    devnum = 8;
+                    // throw std::runtime_error("Failed to read devnum");
+                }
 
                 std::string modalias;
                 if(!(std::ifstream("/sys/class/video4linux/" + name + "/device/modalias") >> modalias))
-                    throw std::runtime_error("Failed to read modalias");
-                if(modalias.size() < 14 || modalias.substr(0,5) != "usb:v" || modalias[9] != 'p')
-                    throw std::runtime_error("Not a usb format modalias");
-                if(!(std::istringstream(modalias.substr(5,4)) >> std::hex >> vid))
-                    throw std::runtime_error("Failed to read vendor ID");
-                if(!(std::istringstream(modalias.substr(10,4)) >> std::hex >> pid))
-                    throw std::runtime_error("Failed to read product ID");
+                {
+                    vid = 0x8086;
+                    pid = 0x0a66;
+                    // throw std::runtime_error("Failed to read modalias");
+                }
+                else
+                {
+                    std::cerr << modalias << "\n";
+
+                    if(modalias.size() < 14 || modalias.substr(0,5) != "usb:v" || modalias[9] != 'p')
+                        throw std::runtime_error("Not a usb format modalias");
+                    if(!(std::istringstream(modalias.substr(5,4)) >> std::hex >> vid))
+                        throw std::runtime_error("Failed to read vendor ID");
+                    if(!(std::istringstream(modalias.substr(10,4)) >> std::hex >> pid))
+                        throw std::runtime_error("Failed to read product ID");
+                }
                 if(!(std::ifstream("/sys/class/video4linux/" + name + "/device/bInterfaceNumber") >> std::hex >> mi))
                     throw std::runtime_error("Failed to read interface number");
 
@@ -516,6 +533,10 @@ namespace rsimpl
             {
                 std::string name = entry->d_name;
                 if(name == "." || name == "..") continue;
+
+                // ODROID-XU4 hack! Remove
+                if(name == "video6" || name == "video7") continue;
+
                 std::unique_ptr<subdevice> sub(new subdevice(name));
                 subdevices.push_back(move(sub));
             }
