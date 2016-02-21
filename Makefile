@@ -1,10 +1,10 @@
 # Specify BACKEND=V4L2 or BACKEND=LIBUVC to build a specific backend
 BACKEND := V4L2
 
-LIBUSB_FLAGS := `pkg-config --cflags --libs libusb-1.0`
+LIBUSB_FLAGS := -g -O0 `pkg-config --cflags --libs libusb-1.0`
 
-CFLAGS := -std=c11 -fPIC -pedantic -mfpu=neon -DRS_USE_$(BACKEND)_BACKEND $(LIBUSB_FLAGS)
-CXXFLAGS := -std=c++11 -fPIC -pedantic -O3 -mfpu=neon -Wno-missing-field-initializers
+CFLAGS := -g -O0 -std=c11 -fPIC -pedantic -mfpu=neon -DRS_USE_$(BACKEND)_BACKEND $(LIBUSB_FLAGS)
+CXXFLAGS := -g -O0 -std=c++11 -fPIC -pedantic -mfpu=neon -Wno-missing-field-initializers
 CXXFLAGS += -Wno-switch -Wno-multichar -DRS_USE_$(BACKEND)_BACKEND $(LIBUSB_FLAGS)
 
 # Compute list of all *.o files that participate in librealsense.so
@@ -14,7 +14,7 @@ OBJECTS += $(addprefix libuvc/, $(notdir $(basename $(wildcard src/libuvc/*.c)))
 OBJECTS := $(addprefix obj/, $(addsuffix .o, $(OBJECTS)))
 
 # Sets of flags used by the example programs
-REALSENSE_FLAGS := -Iinclude -Llib -lrealsense -lm
+REALSENSE_FLAGS := -g -O0 -Iinclude -Llib -lrealsense -lm
 GLFW3_FLAGS := `pkg-config --cflags --libs glfw3 gl glu`
 
 # Compute a list of all example program binaries

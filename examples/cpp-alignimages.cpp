@@ -38,11 +38,14 @@ int main(int argc, char * argv[]) try
     GLFWwindow * win = glfwCreateWindow(dev.is_stream_enabled(rs::stream::infrared2) ? 1920 : 1280, 960, ss.str().c_str(), 0, 0);
     glfwMakeContextCurrent(win);
 
+
     while (!glfwWindowShouldClose(win))
     {
         // Wait for new images
         glfwPollEvents();
+	printf("Before wait_for_frames\n");
         dev.wait_for_frames();
+	printf("After wait for frames\n");
 
         // Clear the framebuffer
         int w,h;

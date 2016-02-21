@@ -3,7 +3,7 @@
 
 #ifdef RS_USE_LIBUVC_BACKEND
 
-//#define ENABLE_DEBUG_SPAM
+#define ENABLE_DEBUG_SPAM
 
 #include "uvc.h"
 #include "libuvc/libuvc.h"
@@ -179,10 +179,12 @@ namespace rsimpl
                     uvc_print_stream_ctrl(&sub.ctrl, stdout);
                     #endif
 
+ 
                     check("uvc_start_streaming", uvc_start_streaming(sub.handle, &sub.ctrl, [](uvc_frame * frame, void * user)
                     {
                         reinterpret_cast<subdevice *>(user)->callback(frame->data);
                     }, &sub, 0, num_transfer_bufs));
+
                 }
             }
         }

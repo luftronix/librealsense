@@ -4,6 +4,8 @@
 #include "device.h"
 #include "sync.h"
 
+#include <iostream>
+
 using namespace rsimpl;
 
 rs_device::rs_device(std::shared_ptr<rsimpl::uvc::device> device, const rsimpl::static_device_info & info) : device(device), config(info), capturing(false),
@@ -41,7 +43,7 @@ void rs_device::enable_stream(rs_stream stream, int width, int height, rs_format
     if(config.info.stream_subdevices[stream] == -1) throw std::runtime_error("unsupported stream");
 
     config.requests[stream] = {true, width, height, format, fps};
-    for(auto & s : native_streams) s->archive.reset(); // Changing stream configuration invalidates the current stream info
+//    for(auto & s : native_streams) s->archive.reset(); // Changing stream configuration invalidates the current stream info
 }
 
 void rs_device::enable_stream_preset(rs_stream stream, rs_preset preset)
@@ -50,7 +52,7 @@ void rs_device::enable_stream_preset(rs_stream stream, rs_preset preset)
     if(!config.info.presets[stream][preset].enabled) throw std::runtime_error("unsupported stream");
 
     config.requests[stream] = config.info.presets[stream][preset];
-    for(auto & s : native_streams) s->archive.reset(); // Changing stream configuration invalidates the current stream info
+//    for(auto & s : native_streams) s->archive.reset(); // Changing stream configuration invalidates the current stream info
 }
 
 void rs_device::disable_stream(rs_stream stream)
@@ -59,7 +61,7 @@ void rs_device::disable_stream(rs_stream stream)
     if(config.info.stream_subdevices[stream] == -1) throw std::runtime_error("unsupported stream");
 
     config.requests[stream] = {};
-    for(auto & s : native_streams) s->archive.reset(); // Changing stream configuration invalidates the current stream info
+  //  for(auto & s : native_streams) s->archive.reset(); // Changing stream configuration invalidates the current stream info
 }
 
 void rs_device::start()
@@ -70,23 +72,45 @@ void rs_device::start()
     auto archive = std::make_shared<frame_archive>(selected_modes);
     auto timestamp_reader = create_frame_timestamp_reader();
 
-    for(auto & s : native_streams) s->archive.reset(); // Starting capture invalidates the current stream info, if any exists from previous capture
+	    printf("01  Device %x, native streams archive %x %x %x %x\n", (unsigned int)this, (unsigned int)native_streams[0]->archive.get(), (unsigned int)native_streams[1]->archive.get(), (unsigned int)native_streams[2]->archive.get(), (unsigned int)native_streams[3]->archive.get());
+    for(auto & s : native_streams)
+    {
+       auto aa = s->archive;
+//       s->archive.reset(); // Starting capture invalidates the current stream info, if any exists from previous capture
 
+      printf("02 aa=%x, s = %x", (unsigned int)s, (unsigned int)(aa.get()));
+    }
+	    printf("03  Device %x, native streams archive %x %x %x %x\n", (unsigned int)this, (unsigned int)native_streams[0]->archive.get(), (unsigned int)native_streams[1]->archive.get(), (unsigned int)native_streams[2]->archive.get(), (unsigned int)native_streams[3]->archive.get());
+
+    //for(auto & s : native_streams) s->archive.reset(); // Starting capture invalidates the current stream info, if any exists from previous capture
     // Satisfy stream_requests as necessary for each subdevice, calling set_mode and
     // dispatching the uvc configuration for a requested stream to the hardware
     for(auto mode_selection : selected_modes)
     {
         // Create a stream buffer for each stream served by this subdevice mode
         for(auto & stream_mode : mode_selection.get_outputs())
-        {                    
+        {      
+	    printf("1 Device %x, native streams archive %x %x %x %x\n", (unsigned int)this, (unsigned int)native_streams[0]->archive.get(), (unsigned int)native_streams[1]->archive.get(), (unsigned int)native_streams[2]->archive.get(), (unsigned int)native_streams[3]->archive.get());
+              
             // If this is one of the streams requested by the user, store the buffer so they can access it
-            if(config.requests[stream_mode.first].enabled) native_streams[stream_mode.first]->archive = archive;
+            if(config.requests[stream_mode.first].enabled) 
+            {
+                native_streams[stream_mode.first]->archive = archive;
+            }
         }
 
+	    printf("2 Device %x, native streams archive %x %x %x %x\n", (unsigned int)this, (unsigned int)native_streams[0]->archive.get(), (unsigned int)native_streams[1]->archive.get(), (unsigned int)native_streams[2]->archive.get(), (unsigned int)native_streams[3]->archive.get());
         // Initialize the subdevice and set it to the selected mode
+        for(auto & s : native_streams)
+        {
+  //           s->archive.reset(); // Starting capture invalidates the current stream info, if any exists from previous capture
+        } 
+	    printf("3 Device %x, native streams archive %x %x %x %x\n", (unsigned int)this, (unsigned int)native_streams[0]->archive.get(), (unsigned int)native_streams[1]->archive.get(), (unsigned int)native_streams[2]->archive.get(), (unsigned int)native_streams[3]->archive.get());
+
         set_subdevice_mode(*device, mode_selection.mode.subdevice, mode_selection.mode.native_dims.x, mode_selection.mode.native_dims.y, mode_selection.mode.pf.fourcc, mode_selection.mode.fps, 
             [mode_selection, archive, timestamp_reader](const void * frame) mutable
         {
+		printf("[");
             // Ignore any frames which appear corrupted or invalid
             if(!timestamp_reader->validate_frame(mode_selection.mode, frame)) return;
 
@@ -100,14 +124,20 @@ void rs_device::start()
             // Unpack the frame and commit it to the archive
             mode_selection.unpack(dest.data(), reinterpret_cast<const byte *>(frame));
             for(auto & output : mode_selection.get_outputs()) archive->commit_frame(output.first);
+		printf("]");
         });
+	    printf("4 Device %x, native streams archive %x %x %x %x\n", (unsigned int)this, (unsigned int)native_streams[0]->archive.get(), (unsigned int)native_streams[1]->archive.get(), (unsigned int)native_streams[2]->archive.get(), (unsigned int)native_streams[3]->archive.get());
+//    for(auto & s : native_streams) s->archive.reset(); // Starting capture invalidates the current stream info, if any exists from previous capture
     }
     
     this->archive = archive;
+//    for(auto & s : native_streams) s->archive.reset(); // Starting capture invalidates the current stream info, if any exists from previous capture
     on_before_start(selected_modes);
+//    for(auto & s : native_streams) s->archive.reset(); // Starting capture invalidates the current stream info, if any exists from previous capture
     start_streaming(*device, config.info.num_libuvc_transfer_buffers);
     capture_started = std::chrono::high_resolution_clock::now();
     capturing = true;
+	    printf("9 Device %x, native streams archive %x %x %x %x\n", (unsigned int)this, (unsigned int)native_streams[0]->archive.get(), (unsigned int)native_streams[1]->archive.get(), (unsigned int)native_streams[2]->archive.get(), (unsigned int)native_streams[3]->archive.get());
 }
 
 void rs_device::stop()

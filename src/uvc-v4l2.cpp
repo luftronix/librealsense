@@ -86,6 +86,8 @@ namespace rsimpl
 
             subdevice(const std::string & name) : dev_name("/dev/" + name), vid(), pid(), fd(), width(), height(), format(), is_capturing()
             {
+                printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! \n\n");
+
                 struct stat st;
                 if(stat(dev_name.c_str(), &st) < 0)
                 {
@@ -106,7 +108,7 @@ namespace rsimpl
                 }
                 if(!(std::ifstream(path + "../../../devnum") >> devnum))
                 {
-                    devnum = 8;
+                    devnum = 4;
                     // throw std::runtime_error("Failed to read devnum");
                 }
 
@@ -131,7 +133,11 @@ namespace rsimpl
                 if(!(std::ifstream("/sys/class/video4linux/" + name + "/device/bInterfaceNumber") >> std::hex >> mi))
                     throw std::runtime_error("Failed to read interface number");
 
+                std::cerr << " $$$$$$$$$ =========================== $$$$$$$$$$$$$$$$$$$$$$$ \n";
                 fd = open(dev_name.c_str(), O_RDWR | O_NONBLOCK, 0);
+                std::cerr << dev_name << " = " << fd << "\n";
+                std::cerr << " +===========================================================+ \n\n";
+ 
                 if(fd < 0)
                 {
                     std::ostringstream ss; ss << "Cannot open '" << dev_name << "': " << errno << ", " << strerror(errno);
@@ -213,6 +219,8 @@ namespace rsimpl
             {
                 if(!is_capturing)
                 {
+		    printf("+++# v4l_start_capture 0 fd = %d\n", fd);
+
                     v4l2_format fmt = {};
                     fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
                     fmt.fmt.pix.width       = width;
@@ -270,11 +278,15 @@ namespace rsimpl
                     v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
                     for(int i=0; i<10; ++i)
                     {
-                        if(xioctl(fd, VIDIOC_STREAMON, &type) < 0)
+			printf("<");
+                        int res = xioctl(fd, VIDIOC_STREAMON, &type);
+			printf(">");
+                        if(res < 0)
                         {
                             std::this_thread::sleep_for(std::chrono::milliseconds(100));
                         }
                     }
+                    printf(" stream ON!\n");
                     if(xioctl(fd, VIDIOC_STREAMON, &type) < 0) throw_error("VIDIOC_STREAMON");
 
                     is_capturing = true;

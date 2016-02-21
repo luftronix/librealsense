@@ -23,7 +23,7 @@ Installation of devices on Linux is lengthy compared to Windows or OSX due to th
   * `all.pro` contains librealsense and all example applications
   * From the QtCreator top menu: Clean => Run QMake => Build
   * Built QtCreator projects will be placed into `./bin/debug` or `./bin/release`
-6. We also provide a makefile if you'd prefer to use your own favorite text editor
+6. We also provide a makefile if you''d prefer to use your own favorite text editor
   * `make && sudo make install`
   * The example executables will build into `./bin`
 

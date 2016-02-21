@@ -31,6 +31,7 @@ int main(int argc, char * argv[]) try
     dev.enable_stream(rs::stream::infrared, rs::preset::best_quality);
     try { dev.enable_stream(rs::stream::infrared2, 0, 0, rs::format::any, 0); } catch(...) {}
 
+
     // Compute field of view for each enabled stream
     for(int i = 0; i < 4; ++i)
     {
@@ -40,13 +41,15 @@ int main(int argc, char * argv[]) try
         std::cout << "Capturing " << stream << " at " << intrin.width << " x " << intrin.height;
         std::cout << std::setprecision(1) << std::fixed << ", fov = " << intrin.hfov() << " x " << intrin.vfov() << ", distortion = " << intrin.model() << std::endl;
     }
-    
+   
     // Start our device
     dev.start();
     
     // For the libuvc backend, this sleep is required before touching any of the camera
     // options after a device has been .start()'d
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::cout << "Device stated, warming up..." << std::endl;
+    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    std::cout << "Go!" << std::endl;
         
     // Report the status of each supported option
     /*for(int i = 0; i < RS_OPTION_COUNT; ++i)
@@ -61,7 +64,22 @@ int main(int argc, char * argv[]) try
     }*/
 
     // Open a GLFW window
-    glfwInit();
+    
+    if (glfwInit()) {
+	printf("glfwInit failed !!!!");
+	}
+
+    GLFWwindow* www = glfwCreateWindow(640, 480, "My Title", NULL, NULL);
+    glfwMakeContextCurrent(www);
+    glViewport(0, 0, 800, 600);  
+    while(!glfwWindowShouldClose(www))
+    {
+        glfwPollEvents();
+        glfwSwapBuffers(www);
+    }
+
+    printf("After window!!!!!!\n");
+
     std::ostringstream ss; ss << "CPP Capture Example (" << dev.get_name() << ")";
     GLFWwindow * win = glfwCreateWindow(1280, 960, ss.str().c_str(), 0, 0);
     glfwSetWindowUserPointer(win, &dev);
@@ -97,9 +115,11 @@ int main(int argc, char * argv[]) try
     {
         // Wait for new images
         glfwPollEvents();
+//	printf("Before wait_for_frames\n");
         dev.wait_for_frames();
+//	printf("After wait_for_frames\n");
 
-        std::cout << dev.get_frame_timestamp(rs::stream::depth) << " " << dev.get_frame_timestamp(rs::stream::color) << std::endl;
+//        std::cout << dev.get_frame_timestamp(rs::stream::depth) << " " << dev.get_frame_timestamp(rs::stream::color) << std::endl;
 
         // Clear the framebuffer
         int w,h;
